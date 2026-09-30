@@ -16,10 +16,9 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle>About this project</CardTitle>
             <CardDescription>
-              A watchlist dashboard built to close GraphQL and Next.js gaps, extending real
-              fintech-dashboard experience from prior work — see{" "}
-              <code>docs/architecture.html</code> for the full design reasoning and cross-review
-              notes.
+              A watchlist dashboard exploring newer Next.js and GraphQL tooling versions, built on
+              real fintech-dashboard experience — see <code>docs/architecture.md</code> for the
+              full design reasoning and cross-review notes.
             </CardDescription>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">

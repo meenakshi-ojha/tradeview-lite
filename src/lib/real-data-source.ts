@@ -10,7 +10,7 @@ import type { RawQuote, RawPricePoint } from "@/lib/data-source";
 // which is exactly the "fetch failed" the user hit testing REAL mode for
 // real. The free tier only has single-symbol `/stable/quote?symbol=X`, so
 // this is back to one call per symbol, verified directly against the live
-// API (see docs/architecture.html Round 7).
+// API (see docs/architecture.md Round 7).
 //
 // FMP's free tier also returns 402 (not 404 or an empty array) for a symbol
 // it won't serve — verified against a deliberately-fake ticker — so a

@@ -1,14 +1,14 @@
 # TradeView Lite
 
-A stock watchlist dashboard built as a focused, resume-driven project, deliberately scoped to close two real gaps (GraphQL, Next.js) and extend real fintech-dashboard experience, rather than a generic tutorial app.
+A stock watchlist dashboard exploring the newer end of the GraphQL/Next.js ecosystem, built on top of real prior fintech-dashboard experience rather than an arbitrary CRUD tutorial app.
 
 ## Why this exists
 
-Built alongside an active job search where several JDs named GraphQL and Next.js explicitly, and several more named AI-assisted development tooling as a core requirement. This project closes the first two gaps directly and demonstrates the third (see "AI-assisted development" below), while staying close to real prior experience: a financial-dashboard problem space, not an arbitrary CRUD app.
+GraphQL and Next.js were already part of an earlier project; this one exists to work through what's changed in the newer major versions of both — Next.js 16's App Router/caching model, Apollo Client v4's split packages, TanStack Table v9's rewritten core API — and to push AI-assisted development further end-to-end (see below), while staying close to a real problem space (financial dashboards) rather than a generic CRUD app.
 
 ## Architecture
 
-Full design reasoning, including three rounds of independent cross-review and the fixes that came out of them, lives in [`docs/architecture.html`](docs/architecture.html) — open it in a browser. Summary:
+Full design reasoning, including the cross-review rounds and the fixes that came out of them, lives in [`docs/architecture.md`](docs/architecture.md). Summary:
 
 - **Frontend:** Next.js 16 (App Router) + TypeScript + Tailwind + shadcn/ui (Radix primitives)
 - **Data layer:** Self-hosted GraphQL BFF (Apollo Server via `@as-integrations/next`, mounted as a Route Handler so `fetch`'s Data Cache actually applies) wrapping Financial Modeling Prep's REST API

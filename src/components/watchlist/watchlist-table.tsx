@@ -75,7 +75,7 @@ export function WatchlistTable() {
   // no batch endpoint on the free FMP tier - N symbols = N provider calls -
   // so it fetches once per toggle/watchlist change instead of polling, to
   // avoid burning the 250-calls/day quota in minutes (see Round 7 in
-  // tradeview-lite-architecture.html).
+  // docs/architecture.md).
   // errorPolicy: "all" - the default ("none") sets data to undefined on
   // any GraphQL error, which would blank a fully populated table over one
   // dropped poll. "all" keeps the last-good data around alongside the

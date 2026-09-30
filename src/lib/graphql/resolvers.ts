@@ -9,7 +9,7 @@ import { getQuotesFromRealSource, getHistoryFromRealSource } from "@/lib/real-da
 // Caching (REAL mode) only actually applies because this resolver runs
 // inside a Next.js Route Handler via @as-integrations/next — not a
 // standalone Apollo server outside Next's request lifecycle. See
-// tradeview-lite-architecture.html for the full reasoning.
+// docs/architecture.md for the full reasoning.
 //
 // Mode defaults to MOCK everywhere (schema default + client default) so
 // the real provider's 250-calls/day free quota is never burned by accident
