@@ -183,7 +183,7 @@ export function WatchlistTable() {
           ))
         )}
       </div>
-      <div ref={scrollRef} style={{ height: 320, overflow: "auto" }}>
+      <div ref={scrollRef} style={{ height: 480, overflow: "auto" }}>
         <div style={{ height: virtualizer.getTotalSize(), position: "relative" }}>
           {virtualizer.getVirtualItems().map((item) => {
             const row = rows[item.index];

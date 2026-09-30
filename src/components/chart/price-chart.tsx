@@ -82,7 +82,7 @@ export function PriceChart() {
         <CardTitle>{selectedSymbol} — price history</CardTitle>
       </CardHeader>
       <CardContent>
-        <svg width={WIDTH} height={HEIGHT}>
+        <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} width="100%" height="auto" preserveAspectRatio="xMidYMid meet">
           <LinearGradient id="area-gradient" from="#4f46e5" to="#4f46e5" fromOpacity={0.25} toOpacity={0} />
           <Group left={MARGIN.left} top={MARGIN.top}>
             <AreaClosed

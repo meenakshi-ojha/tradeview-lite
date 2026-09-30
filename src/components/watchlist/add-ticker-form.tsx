@@ -1,56 +1,92 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { tickerSchema, type TickerFormValues } from "@/lib/validation/ticker-schema";
-import { useAppStore } from "@/lib/store/app-store";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { tickerSchema } from "@/lib/validation/ticker-schema";
+import { useAppStore } from "@/lib/store/app-store";
+import { KNOWN_SYMBOLS } from "@/lib/data-source";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
+// Dropdown/combobox instead of a blind free-text input - suggests from the
+// known mock universe (or, once real mode is wired further, FMP's
+// symbol-search endpoint) so adding a ticker is a pick, not a guess. Still
+// falls back to free entry for symbols outside the suggested list, run
+// through the same Zod format check + duplicate guard either way.
 export function AddTickerForm() {
+  const watchlist = useAppStore((s) => s.watchlist);
   const addSymbol = useAppStore((s) => s.addSymbol);
-  const [duplicateNotice, setDuplicateNotice] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const [notice, setNotice] = useState<string | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<TickerFormValues>({
-    resolver: zodResolver(tickerSchema),
-  });
+  const availableSymbols = KNOWN_SYMBOLS.filter((s) => !watchlist.includes(s));
 
-  const onSubmit = (values: TickerFormValues) => {
-    setDuplicateNotice(null);
-    const added = addSymbol(values.symbol);
-    if (!added) {
-      // Duplicate-add guard - also protects the real-API rate budget:
-      // an already-tracked symbol doesn't need re-adding, and re-adding
-      // wouldn't create a second poll anyway since the watchlist is a set
-      // of unique symbols, but surfacing this clearly avoids user confusion.
-      setDuplicateNotice(`${values.symbol} is already on your watchlist`);
+  const commit = (raw: string) => {
+    const parsed = tickerSchema.safeParse({ symbol: raw });
+    if (!parsed.success) {
+      setNotice(parsed.error.issues[0]?.message ?? "Invalid symbol");
       return;
     }
-    reset();
+    const added = addSymbol(parsed.data.symbol);
+    setNotice(added ? null : `${parsed.data.symbol} is already on your watchlist`);
+    setInputValue("");
+    setOpen(false);
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex items-start gap-2">
-      <div className="flex flex-col gap-1">
-        <Input
-          placeholder="Add ticker (e.g. TSLA)"
-          className="w-40 uppercase"
-          {...register("symbol")}
-        />
-        {errors.symbol && (
-          <span className="text-xs text-destructive">{errors.symbol.message}</span>
-        )}
-        {duplicateNotice && (
-          <span className="text-xs text-muted-foreground">{duplicateNotice}</span>
-        )}
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-2">
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" role="combobox" aria-expanded={open} className="w-56 justify-between">
+              Add ticker
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-0">
+            <Command>
+              <CommandInput
+                placeholder="Search or type a symbol..."
+                value={inputValue}
+                onValueChange={setInputValue}
+              />
+              <CommandList>
+                <CommandEmpty>
+                  {inputValue ? (
+                    <button
+                      className="w-full px-2 py-1.5 text-left text-sm hover:bg-accent"
+                      onClick={() => commit(inputValue)}
+                    >
+                      Add &quot;{inputValue.toUpperCase()}&quot;
+                    </button>
+                  ) : (
+                    "No matches"
+                  )}
+                </CommandEmpty>
+                <CommandGroup heading="Suggested">
+                  {availableSymbols.map((symbol) => (
+                    <CommandItem key={symbol} value={symbol} onSelect={() => commit(symbol)}>
+                      <Check className={cn("mr-2 h-4 w-4", "opacity-0")} />
+                      {symbol}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
       </div>
-      <Button type="submit">Add</Button>
-    </form>
+      {notice && <span className="text-xs text-muted-foreground">{notice}</span>}
+    </div>
   );
 }

@@ -108,6 +108,12 @@
       <li><b>Two-mode toggle added:</b> <code>quotes(symbols, mode: MOCK|REAL)</code> and <code>history(symbol, mode: MOCK|REAL)</code> in the GraphQL schema itself, default MOCK. Zustand store holds the current mode; a UI toggle switches it. Explicit, inspectable, no hidden env-var-only switch.</li>
       <li><b>REAL mode error handling:</b> a 429 from FMP returns stale + a "rate limited" flag rather than throwing (matches the Core #6 error-state design); an unconfigured key or fetch failure degrades to a clean per-symbol error rather than crashing the query.</li>
     </ul>
+    <h2>Round 6 - UI feedback after first look: full-width layout, combobox, more visual substance</h2>
+    <ul>
+      <li><b>Add-ticker input became a searchable combobox</b> (shadcn Command + Popover), not a blind free-text field - suggests from the known symbol universe, still falls back to free entry for anything else. Direct feedback: a text box for picking a known ticker is worse UX than a dropdown.</li>
+      <li><b>React Hook Form dropped from this one field, on purpose:</b> a single-field combobox doesn't benefit from RHF's multi-field state orchestration - direct Zod validation (<code>tickerSchema.safeParse</code>) covers the same format-check + rate-budget-protection goal with less machinery. This is a reasoned deviation from the original "Form: RHF + Zod" plan, not a silent drift - matching the tool to the actual problem beats forcing the originally-planned library in everywhere.</li>
+      <li><b>Layout went full-width</b> with a real dashboard shell (header bar, stats row, wider grid) instead of a centered <code>max-w-5xl</code> column - the original layout read as sparse on a real monitor.</li>
+    </ul>
     <h2>State management (final)</h2>
     <ul>
       <li><b>Local:</b> React <code>useState</code>/<code>useReducer</code> - native, no library.</li>
