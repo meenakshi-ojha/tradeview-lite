@@ -29,8 +29,8 @@ Built using Claude Code, with a deliberate three-round architecture review proce
 ## Getting started
 
 ```bash
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 Mock mode works immediately, no API key needed. To try Real mode, add a Financial Modeling Prep API key to `.env.local`:
