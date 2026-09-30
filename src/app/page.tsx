@@ -24,7 +24,9 @@ export default function Home() {
         <AddTickerForm />
       </div>
 
-      <div className="grid flex-1 gap-6 lg:grid-cols-[3fr_2fr]">
+      {/* items-start: without it, CSS Grid stretches WatchlistTable to
+          match PriceChart's height, undoing its own content-sized height. */}
+      <div className="grid items-start gap-6 lg:grid-cols-[3fr_2fr]">
         <WatchlistTable />
         <PriceChart />
       </div>

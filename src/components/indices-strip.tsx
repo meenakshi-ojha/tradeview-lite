@@ -6,9 +6,10 @@ import { useQuery } from "@apollo/client/react";
 import { GET_QUOTES, GET_HISTORY } from "@/lib/graphql/queries";
 import { INDEX_SYMBOLS, INDEX_LABELS } from "@/lib/data-source";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PriceHistoryChart } from "@/components/chart/price-history-chart";
-import { IndexDetailDialog } from "@/components/index-detail-dialog";
+import { SymbolDetailDialog } from "@/components/symbol-detail-dialog";
 
 type Quote = { symbol: string; price: number; changePercent: number; error: string | null };
 type PricePoint = { timestamp: string; price: number };
@@ -26,45 +27,45 @@ function IndexCard({ quote, onClick }: { quote: Quote; onClick: () => void }) {
   const points = (data?.history ?? []).map((p) => ({ date: new Date(p.timestamp), price: p.price }));
 
   return (
-    <Card
-      role="button"
-      tabIndex={0}
-      onClick={onClick}
-      onKeyDown={(e) => e.key === "Enter" && onClick()}
-      className="cursor-pointer transition-colors hover:bg-muted/50"
-    >
-      <CardContent className="flex flex-col gap-2 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-xs font-medium text-muted-foreground">
-              {INDEX_LABELS[quote.symbol] ?? quote.symbol}
+    <Card>
+      <CardContent className="py-4">
+        <Button
+          variant="ghost"
+          onClick={onClick}
+          className="h-auto w-full flex-col items-stretch justify-start gap-2 p-0 text-left"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xs font-medium text-muted-foreground">
+                {INDEX_LABELS[quote.symbol] ?? quote.symbol}
+              </div>
+              <div className="text-lg font-semibold tabular-nums">{quote.price.toFixed(2)}</div>
             </div>
-            <div className="text-lg font-semibold tabular-nums">{quote.price.toFixed(2)}</div>
+            <span
+              className={`inline-flex items-center gap-0.5 text-sm font-medium ${
+                positive ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"
+              }`}
+            >
+              <Icon className="size-3.5" aria-hidden="true" />
+              {positive ? "+" : ""}
+              {quote.changePercent.toFixed(2)}%
+            </span>
           </div>
-          <span
-            className={`inline-flex items-center gap-0.5 text-sm font-medium ${
-              positive ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"
-            }`}
-          >
-            <Icon className="size-3.5" aria-hidden="true" />
-            {positive ? "+" : ""}
-            {quote.changePercent.toFixed(2)}%
-          </span>
-        </div>
-        <div className="h-10">
-          {loading || points.length === 0 ? (
-            <Skeleton className="h-full w-full" />
-          ) : (
-            <PriceHistoryChart
-              points={points}
-              width={200}
-              height={40}
-              showAxes={false}
-              gradientId={`gradient-spark-${quote.symbol}`}
-              color={positive ? "#059669" : "#dc2626"}
-            />
-          )}
-        </div>
+          <div className="h-10">
+            {loading || points.length === 0 ? (
+              <Skeleton className="h-full w-full" />
+            ) : (
+              <PriceHistoryChart
+                points={points}
+                width={200}
+                height={40}
+                showAxes={false}
+                gradientId={`gradient-spark-${quote.symbol}`}
+                color={positive ? "#059669" : "#dc2626"}
+              />
+            )}
+          </div>
+        </Button>
       </CardContent>
     </Card>
   );
@@ -89,9 +90,10 @@ export function IndicesStrip() {
           <IndexCard key={q.symbol} quote={q} onClick={() => setOpenSymbol(q.symbol)} />
         ))}
       </div>
-      <IndexDetailDialog
+      <SymbolDetailDialog
         symbol={openSymbol}
         label={openSymbol ? INDEX_LABELS[openSymbol] ?? openSymbol : ""}
+        mode="MOCK"
         open={openSymbol !== null}
         onOpenChange={(open) => !open && setOpenSymbol(null)}
       />

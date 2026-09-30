@@ -195,7 +195,11 @@ export function WatchlistTable() {
           ))
         )}
       </div>
-      <div ref={scrollRef} style={{ height: 480, overflow: "auto" }}>
+      {/* Height fits the actual rows (up to a 480px cap where it scrolls
+          instead) - a fixed 480px regardless of row count was leaving a
+          wall of empty space under a 3-row watchlist and pushing the rest
+          of the page (news, etc.) further down than it needed to be. */}
+      <div ref={scrollRef} style={{ height: Math.min(rows.length * 44, 480), overflow: "auto" }}>
         <div style={{ height: virtualizer.getTotalSize(), position: "relative" }}>
           {virtualizer.getVirtualItems().map((item) => {
             const row = rows[item.index];
