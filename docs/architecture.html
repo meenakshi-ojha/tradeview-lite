@@ -114,6 +114,13 @@
       <li><b>React Hook Form dropped from this one field, on purpose:</b> a single-field combobox doesn't benefit from RHF's multi-field state orchestration - direct Zod validation (<code>tickerSchema.safeParse</code>) covers the same format-check + rate-budget-protection goal with less machinery. This is a reasoned deviation from the original "Form: RHF + Zod" plan, not a silent drift - matching the tool to the actual problem beats forcing the originally-planned library in everywhere.</li>
       <li><b>Layout went full-width</b> with a real dashboard shell (header bar, stats row, wider grid) instead of a centered <code>max-w-5xl</code> column - the original layout read as sparse on a real monitor.</li>
     </ul>
+    <h2>Round 7 - REAL mode tested against the live API, not just in theory</h2>
+    <ul>
+      <li><b>The batch-quote assumption from Round 5 was wrong:</b> tested directly against the live FMP API and <code>batch-quote</code> returns HTTP 402 ("not available under your current subscription") on the free tier - it's paid-plan-only. This was the actual cause of every REAL-mode toggle failing with a fetch error. The free tier only has single-symbol <code>/stable/quote?symbol=X</code>.</li>
+      <li><b>FMP's free tier returns 402 for an unserviceable symbol too</b>, not 404 or an empty array - verified against a deliberately-fake ticker. A per-symbol 402 is now mapped to <code>UNKNOWN_SYMBOL</code> rather than treated as a fatal error.</li>
+      <li><b>No batch endpoint means N symbols = N provider calls per fetch</b>, which breaks the original "40 calls/min headroom" math from Round 3 - that math assumed one call per poll, not one call per symbol per poll. Fix: the Data Cache window widened to 60s, and REAL mode's client-side <code>pollInterval</code> is disabled entirely (0, not 30000) across the watchlist table, stats bar, and Markets grid. REAL mode now fetches once per toggle/watchlist-change instead of continuously polling - the quota can't be burned by just leaving the tab open.</li>
+      <li><b>Verified end-to-end, not just unit-tested:</b> curled the live FMP endpoints directly to confirm the 402s, then toggled REAL mode through the actual running UI (Playwright) and confirmed real AAPL/MSFT/NVDA prices and a real price-history chart render with zero console errors - not just "the code looks right."</li>
+    </ul>
     <h2>State management (final)</h2>
     <ul>
       <li><b>Local:</b> React <code>useState</code>/<code>useReducer</code> - native, no library.</li>

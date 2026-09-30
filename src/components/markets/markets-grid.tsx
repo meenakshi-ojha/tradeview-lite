@@ -23,9 +23,11 @@ export function MarketsGrid() {
 
   // Deliberately a separate query from the watchlist's — this browses the
   // full known universe, not just the symbols the user has already added.
+  // In REAL mode this alone is 8 provider calls (no batch endpoint on the
+  // free tier), so polling is disabled here too - see watchlist-table.tsx.
   const { data, loading, error } = useQuery<{ quotes: Quote[] }, { symbols: string[]; mode: string }>(
     GET_QUOTES,
-    { variables: { symbols: KNOWN_SYMBOLS, mode: dataMode }, pollInterval: 30000 }
+    { variables: { symbols: KNOWN_SYMBOLS, mode: dataMode }, pollInterval: dataMode === "REAL" ? 0 : 30000 }
   );
 
   if (loading && !data) {

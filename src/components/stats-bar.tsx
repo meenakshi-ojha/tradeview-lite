@@ -41,7 +41,7 @@ export function StatsBar() {
   // the already-active query rather than firing a second network request.
   const { data } = useQuery<{ quotes: Quote[] }, { symbols: string[]; mode: string }>(GET_QUOTES, {
     variables: { symbols: watchlist, mode: dataMode },
-    pollInterval: 30000,
+    pollInterval: dataMode === "REAL" ? 0 : 30000,
     skip: watchlist.length === 0,
   });
 

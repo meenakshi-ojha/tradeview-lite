@@ -61,12 +61,14 @@ export function WatchlistTable() {
   const selectSymbol = useAppStore((s) => s.selectSymbol);
   const removeSymbol = useAppStore((s) => s.removeSymbol);
 
-  // pollInterval: 30s - matches the rate-limit design point (see
-  // tradeview-lite-architecture.html). REAL mode's resolver batches this
-  // into one call for the whole watchlist rather than one per ticker.
+  // MOCK polls every 30s for a live demo feel (free, local). REAL mode has
+  // no batch endpoint on the free FMP tier - N symbols = N provider calls -
+  // so it fetches once per toggle/watchlist change instead of polling, to
+  // avoid burning the 250-calls/day quota in minutes (see Round 7 in
+  // tradeview-lite-architecture.html).
   const { data, loading, error } = useQuery<{ quotes: Quote[] }, { symbols: string[]; mode: string }>(GET_QUOTES, {
     variables: { symbols: watchlist, mode: dataMode },
-    pollInterval: 30000,
+    pollInterval: dataMode === "REAL" ? 0 : 30000,
     skip: watchlist.length === 0,
     fetchPolicy: "cache-and-network",
   });

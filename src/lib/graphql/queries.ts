@@ -22,3 +22,15 @@ export const GET_HISTORY = gql`
     }
   }
 `;
+
+export const GET_NEWS = gql`
+  query GetNews {
+    news {
+      id
+      headline
+      source
+      publishedAt
+      relatedSymbol
+    }
+  }
+`;

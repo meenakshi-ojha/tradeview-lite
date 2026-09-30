@@ -104,3 +104,52 @@ export async function getHistoryFromSource(symbol: string): Promise<RawPricePoin
 }
 
 export const KNOWN_SYMBOLS = Object.keys(MOCK_BASE_PRICES);
+
+// Indices are shown on the dashboard as a fixed strip, separate from the
+// user's own watchlist — not addable/removable, so they live in the same
+// price map (getQuoteFromSource works unmodified) but a separate symbol list.
+const INDEX_BASE_PRICES: Record<string, number> = {
+  SPX: 5810.25,
+  NDX: 20452.1,
+  DJI: 42150.6,
+};
+Object.assign(MOCK_BASE_PRICES, INDEX_BASE_PRICES);
+
+export const INDEX_SYMBOLS = Object.keys(INDEX_BASE_PRICES);
+
+export const INDEX_LABELS: Record<string, string> = {
+  SPX: "S&P 500",
+  NDX: "Nasdaq 100",
+  DJI: "Dow 30",
+};
+
+export type MockNewsItem = {
+  id: string;
+  headline: string;
+  source: string;
+  publishedAt: string;
+  relatedSymbol: string | null;
+};
+
+// Mock-only: FMP's news endpoint contract wasn't verified against this
+// build, so rather than ship a real-mode call that might silently break or
+// burn quota on an untested shape, news stays a canned mock feed.
+const NEWS_TEMPLATES: Array<{ headline: string; source: string; relatedSymbol: string | null; minutesAgo: number }> = [
+  { headline: "Fed holds rates steady, signals no cuts before Q2", source: "MarketWatch", relatedSymbol: null, minutesAgo: 42 },
+  { headline: "AAPL nears all-time high on strong services revenue", source: "Reuters", relatedSymbol: "AAPL", minutesAgo: 95 },
+  { headline: "Nasdaq 100 rally broadens beyond megacap tech", source: "Bloomberg", relatedSymbol: "NDX", minutesAgo: 130 },
+  { headline: "NVDA supplier reports record data-center orders", source: "CNBC", relatedSymbol: "NVDA", minutesAgo: 210 },
+  { headline: "Treasury yields tick up ahead of jobs report", source: "MarketWatch", relatedSymbol: null, minutesAgo: 300 },
+  { headline: "MSFT cloud unit growth beats analyst estimates", source: "Reuters", relatedSymbol: "MSFT", minutesAgo: 400 },
+];
+
+export function getMockNews(): MockNewsItem[] {
+  const now = Date.now();
+  return NEWS_TEMPLATES.map((n, i) => ({
+    id: String(i),
+    headline: n.headline,
+    source: n.source,
+    relatedSymbol: n.relatedSymbol,
+    publishedAt: new Date(now - n.minutesAgo * 60 * 1000).toISOString(),
+  }));
+}

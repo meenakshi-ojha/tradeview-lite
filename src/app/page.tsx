@@ -2,6 +2,8 @@ import { AddTickerForm } from "@/components/watchlist/add-ticker-form";
 import { WatchlistTable } from "@/components/watchlist/watchlist-table";
 import { PriceChart } from "@/components/chart/price-chart";
 import { StatsBar } from "@/components/stats-bar";
+import { IndicesStrip } from "@/components/indices-strip";
+import { NewsPanel } from "@/components/news-panel";
 
 export default function Home() {
   return (
@@ -12,6 +14,8 @@ export default function Home() {
           Your tracked symbols, updated every 30 seconds.
         </p>
       </div>
+
+      <IndicesStrip />
 
       <StatsBar />
 
@@ -24,6 +28,8 @@ export default function Home() {
         <WatchlistTable />
         <PriceChart />
       </div>
+
+      <NewsPanel />
     </div>
   );
 }

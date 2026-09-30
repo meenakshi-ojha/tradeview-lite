@@ -19,8 +19,17 @@ export const typeDefs = `#graphql
     price: Float!
   }
 
+  type NewsItem {
+    id: ID!
+    headline: String!
+    source: String!
+    publishedAt: String!
+    relatedSymbol: String
+  }
+
   type Query {
     quotes(symbols: [String!]!, mode: DataMode = MOCK): [Quote!]!
     history(symbol: String!, mode: DataMode = MOCK): [PricePoint!]!
+    news: [NewsItem!]!
   }
 `;
