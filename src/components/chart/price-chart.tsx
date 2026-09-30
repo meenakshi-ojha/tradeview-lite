@@ -58,7 +58,8 @@ export function PriceChart() {
     return (
       <Card>
         <CardContent className="p-8 text-center text-sm text-muted-foreground">
-          No history available for {selectedSymbol}.
+          No history available for {selectedSymbol} — it isn&apos;t a recognized symbol in the
+          current data mode.
         </CardContent>
       </Card>
     );
