@@ -23,6 +23,18 @@ export const GET_HISTORY = gql`
   }
 `;
 
+export const GET_CANDLES = gql`
+  query GetCandles($symbol: String!, $range: HistoryRange!) {
+    candles(symbol: $symbol, range: $range) {
+      timestamp
+      open
+      high
+      low
+      close
+    }
+  }
+`;
+
 export const GET_NEWS = gql`
   query GetNews {
     news {

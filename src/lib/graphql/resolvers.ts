@@ -1,4 +1,4 @@
-import { getQuoteFromSource, getHistoryFromSource, getMockNews } from "@/lib/data-source";
+import { getQuoteFromSource, getHistoryFromSource, getCandlesFromSource, getMockNews } from "@/lib/data-source";
 import { getQuotesFromRealSource, getHistoryFromRealSource } from "@/lib/real-data-source";
 
 // Real-Finnhub note superseded: the real provider is FMP (Financial
@@ -40,6 +40,9 @@ export const resolvers = {
       const days = RANGE_DAYS[range];
       const fetcher = mode === "REAL" ? getHistoryFromRealSource : getHistoryFromSource;
       return fetcher(symbol, days);
+    },
+    candles: async (_: unknown, { symbol, range }: { symbol: string; range: HistoryRange }) => {
+      return getCandlesFromSource(symbol, RANGE_DAYS[range]);
     },
     news: async () => getMockNews(),
   },

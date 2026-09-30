@@ -105,6 +105,45 @@ export async function getHistoryFromSource(symbol: string, days = 30): Promise<R
 
 export const KNOWN_SYMBOLS = Object.keys(MOCK_BASE_PRICES);
 
+export type RawCandlePoint = {
+  timestamp: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+};
+
+// Mock-only, deliberately: the free FMP endpoint this app's REAL mode uses
+// (historical-price-eod/light) only returns a single close price per day,
+// no open/high/low. There's no real OHLC data to plug in here, so
+// candlesticks stay a mock-mode-only feature rather than a REAL mode call
+// that can't succeed.
+export async function getCandlesFromSource(symbol: string, days = 30): Promise<RawCandlePoint[]> {
+  const base = MOCK_BASE_PRICES[symbol];
+  if (!base) return [];
+
+  const points: RawCandlePoint[] = [];
+  const now = Date.now();
+  let close = base * (0.94 + Math.random() * 0.05);
+
+  for (let i = days; i >= 0; i--) {
+    const open = close;
+    const drift = (Math.random() - 0.48) * base * 0.012;
+    close = Math.max(0.01, open + drift);
+    const high = Math.max(open, close) + Math.random() * base * 0.004;
+    const low = Math.max(0.01, Math.min(open, close) - Math.random() * base * 0.004);
+
+    points.push({
+      timestamp: new Date(now - i * 24 * 60 * 60 * 1000).toISOString(),
+      open: Number(open.toFixed(2)),
+      high: Number(high.toFixed(2)),
+      low: Number(low.toFixed(2)),
+      close: Number(close.toFixed(2)),
+    });
+  }
+  return points;
+}
+
 // Indices are shown on the dashboard as a fixed strip, separate from the
 // user's own watchlist — not addable/removable, so they live in the same
 // price map (getQuoteFromSource works unmodified) but a separate symbol list.
