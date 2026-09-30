@@ -9,13 +9,17 @@ export function ModeToggle() {
   const setDataMode = useAppStore((s) => s.setDataMode);
 
   return (
-    <div className="flex items-center gap-2">
-      <Badge variant={dataMode === "MOCK" ? "secondary" : "default"}>
+    <div className="flex w-full flex-col items-stretch gap-2">
+      <Badge
+        variant={dataMode === "MOCK" ? "secondary" : "default"}
+        className="w-fit"
+      >
         {dataMode === "MOCK" ? "Mock data" : "Real data (FMP)"}
       </Badge>
       <Button
         variant="outline"
         size="sm"
+        className="w-full"
         onClick={() => setDataMode(dataMode === "MOCK" ? "REAL" : "MOCK")}
         title="Real mode uses a very limited free API quota (250 calls/day) - flip deliberately"
       >

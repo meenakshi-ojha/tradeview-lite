@@ -13,7 +13,10 @@ type AppState = {
   removeSymbol: (symbol: string) => void;
   selectSymbol: (symbol: string) => void;
   setDataMode: (mode: DataMode) => void;
+  resetWatchlist: () => void;
 };
+
+const DEFAULT_WATCHLIST = ["AAPL", "MSFT", "NVDA"];
 
 // Global state + persistence unified via Zustand's `persist` middleware —
 // the watchlist array and selected ticker sync to localStorage automatically.
@@ -22,7 +25,7 @@ type AppState = {
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
-      watchlist: ["AAPL", "MSFT", "NVDA"],
+      watchlist: DEFAULT_WATCHLIST,
       selectedSymbol: "AAPL",
       // Defaults to MOCK — real API mode is an explicit opt-in toggle so the
       // very limited real quota is never burned by accident.
@@ -45,6 +48,9 @@ export const useAppStore = create<AppState>()(
       selectSymbol: (symbol: string) => set({ selectedSymbol: symbol }),
 
       setDataMode: (mode: DataMode) => set({ dataMode: mode }),
+
+      resetWatchlist: () =>
+        set({ watchlist: [...DEFAULT_WATCHLIST], selectedSymbol: DEFAULT_WATCHLIST[0] }),
     }),
     { name: "tradeview-lite-store" }
   )

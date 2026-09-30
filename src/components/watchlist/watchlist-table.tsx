@@ -12,6 +12,7 @@ import {
   useTable,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { GET_QUOTES } from "@/lib/graphql/queries";
 import { useAppStore } from "@/lib/store/app-store";
 import { Badge } from "@/components/ui/badge";
@@ -86,8 +87,17 @@ export function WatchlistTable() {
         cell: (ctx) => {
           const v = ctx.getValue();
           const positive = v >= 0;
+          // emerald/red-700, not -600: -600 measures 3.77:1 against white,
+          // below WCAG AA's 4.5:1 for text. The arrow icon also means the
+          // signal isn't carried by color alone (WCAG 1.4.1).
+          const Icon = positive ? ArrowUpRight : ArrowDownRight;
           return (
-            <span className={positive ? "text-emerald-600" : "text-red-600"}>
+            <span
+              className={`inline-flex items-center gap-0.5 font-medium ${
+                positive ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"
+              }`}
+            >
+              <Icon className="size-3.5" aria-hidden="true" />
               {positive ? "+" : ""}
               {v.toFixed(2)}%
             </span>
