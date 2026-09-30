@@ -58,7 +58,10 @@ export function AddTickerForm() {
               <CommandInput
                 placeholder="Search or type a symbol..."
                 value={inputValue}
-                onValueChange={setInputValue}
+                onValueChange={(value) => {
+                  setInputValue(value);
+                  setNotice(null);
+                }}
               />
               <CommandList>
                 <CommandEmpty>
@@ -82,11 +85,17 @@ export function AddTickerForm() {
                   ))}
                 </CommandGroup>
               </CommandList>
+              {/* Validation failures keep the popover open (so the user can
+                  correct the input), which would otherwise hide the notice
+                  rendered below the closed trigger - so it's shown here too. */}
+              {notice && (
+                <div className="border-t px-2 py-1.5 text-xs text-destructive">{notice}</div>
+              )}
             </Command>
           </PopoverContent>
         </Popover>
       </div>
-      {notice && <span className="text-xs text-muted-foreground">{notice}</span>}
+      {!open && notice && <span className="text-xs text-muted-foreground">{notice}</span>}
     </div>
   );
 }

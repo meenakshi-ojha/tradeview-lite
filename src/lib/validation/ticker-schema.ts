@@ -10,8 +10,8 @@ export const tickerSchema = z.object({
     .string()
     .trim()
     .min(1, "Enter a ticker symbol")
-    .max(5, "Ticker symbols are 1-5 characters")
-    .regex(/^[A-Za-z]+$/, "Letters only (e.g. AAPL)")
+    .max(10, "Ticker symbols are 1-10 characters")
+    .regex(/^[A-Za-z]+$/, "Letters only (e.g. AAPL, HDFCBANK)")
     .transform((s) => s.toUpperCase()),
 });
 
