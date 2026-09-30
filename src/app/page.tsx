@@ -4,15 +4,14 @@ import { PriceChart } from "@/components/chart/price-chart";
 import { StatsBar } from "@/components/stats-bar";
 import { IndicesStrip } from "@/components/indices-strip";
 import { NewsPanel } from "@/components/news-panel";
+import { DashboardSubtitle } from "@/components/dashboard-subtitle";
 
 export default function Home() {
   return (
     <div className="flex w-full flex-1 flex-col gap-6 p-6">
       <div>
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">
-          Your tracked symbols, updated every 30 seconds.
-        </p>
+        <DashboardSubtitle />
       </div>
 
       <IndicesStrip />
