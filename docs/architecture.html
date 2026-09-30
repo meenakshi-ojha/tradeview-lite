@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TradeView Lite - Architecture</title>
+<style>
+  body { background: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 30px; color: #1a1a1a; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 20px; }
+  .notes { max-width: 900px; margin: 24px auto 0; font-size: 13px; line-height: 1.7; }
+  .notes h2 { font-size: 15px; margin-top: 20px; margin-bottom: 6px; }
+  .notes li { margin-bottom: 4px; }
+  svg { display: block; margin: 0 auto; }
+</style>
+</head>
+<body>
+  <h1>TradeView Lite — Architecture</h1>
+  <div class="subtitle">Personal project, built to close GraphQL/Next.js gaps and extend real financial-dashboard experience from a fintech job. Repo: github.com/meenakshi-ojha/tradeview-lite</div>
+
+  <svg viewBox="0 0 920 750" width="920" height="750">
+    <defs>
+      <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L8,3 L0,6 Z" fill="#555"/>
+      </marker>
+    </defs>
+
+    <!-- Browser -->
+    <rect x="40" y="20" width="840" height="60" rx="8" fill="#eef4ff" stroke="#4a7fd9" stroke-width="1.5"/>
+    <text x="60" y="45" font-size="13" font-weight="700" fill="#1a3a6b">User's Browser</text>
+    <text x="60" y="65" font-size="12" fill="#3a5a8b">Loads the Next.js app, renders UI, polls for live quote updates</text>
+
+    <!-- Next.js frontend box -->
+    <rect x="40" y="100" width="840" height="230" rx="8" fill="#fff8f0" stroke="#d99a4a" stroke-width="1.5"/>
+    <text x="60" y="125" font-size="13" font-weight="700" fill="#7a4a10">Next.js App (App Router) · TypeScript · Tailwind · shadcn/ui</text>
+
+    <!-- Watchlist component -->
+    <rect x="70" y="145" width="240" height="150" rx="6" fill="#ffffff" stroke="#d99a4a" stroke-width="1"/>
+    <text x="90" y="168" font-size="12" font-weight="700" fill="#333">Watchlist</text>
+    <text x="90" y="188" font-size="11" fill="#555">TanStack Table</text>
+    <text x="90" y="204" font-size="11" fill="#555">TanStack Virtual</text>
+    <text x="90" y="220" font-size="11" fill="#555">(virtualized rows,</text>
+    <text x="90" y="234" font-size="11" fill="#555">sortable columns)</text>
+    <text x="90" y="258" font-size="10.5" fill="#888">shadcn/ui table + inputs</text>
+
+    <!-- Chart component -->
+    <rect x="340" y="145" width="240" height="150" rx="6" fill="#ffffff" stroke="#d99a4a" stroke-width="1"/>
+    <text x="360" y="168" font-size="12" font-weight="700" fill="#333">Price Chart</text>
+    <text x="360" y="188" font-size="11" fill="#555">visx</text>
+    <text x="360" y="204" font-size="11" fill="#555">D3 scales</text>
+    <text x="360" y="220" font-size="11" fill="#555">(sparkline / line chart</text>
+    <text x="360" y="234" font-size="11" fill="#555">per ticker)</text>
+
+    <!-- Apollo Client -->
+    <rect x="610" y="145" width="240" height="150" rx="6" fill="#ffffff" stroke="#d99a4a" stroke-width="1"/>
+    <text x="630" y="168" font-size="12" font-weight="700" fill="#333">Apollo Client</text>
+    <text x="630" y="188" font-size="11" fill="#555">GraphQL queries</text>
+    <text x="630" y="204" font-size="11" fill="#555">pollInterval: 30000</text>
+    <text x="630" y="220" font-size="11" fill="#555">(refetch every 30s -</text>
+    <text x="630" y="234" font-size="11" fill="#555">not WebSocket, by design)</text>
+
+    <!-- shadcn/ui note -->
+    <text x="60" y="315" font-size="10.5" fill="#a06a20">Component base: shadcn/ui (Radix UI primitives + Tailwind) — code lives in the repo, not a black-box import</text>
+
+    <!-- Arrow browser -> nextjs -->
+    <line x1="460" x2="460" y1="80" y2="100" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- BFF server -->
+    <rect x="40" y="400" width="840" height="130" rx="8" fill="#eefaf0" stroke="#4a9d63" stroke-width="1.5"/>
+    <text x="60" y="425" font-size="13" font-weight="700" fill="#1e5c33">GraphQL BFF - Apollo Server mounted via @as-integrations/next (App Router Route Handler)</text>
+    <text x="60" y="447" font-size="11.5" fill="#2e6c43">Same Next.js app/Vercel deployment - not a separate serverless function (required for caching below to work)</text>
+    <text x="60" y="465" font-size="11.5" fill="#2e6c43">quotes(symbols) resolver - per-symbol Finnhub fetch, cached via Next.js Data Cache (revalidate: 30s)</text>
+    <text x="60" y="483" font-size="11.5" fill="#2e6c43">Data Cache persists across invocations (not naive in-memory, not CDN/edge cache)</text>
+    <text x="60" y="501" font-size="11.5" fill="#2e6c43">Historical/chart data cached separately, much longer TTL (hours) · Finnhub key: server-only env var</text>
+
+    <!-- Arrow nextjs -> BFF -->
+    <line x1="460" x2="460" y1="330" y2="400" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="470" y="368" font-size="10.5" fill="#666">GraphQL over HTTP (client polls every 30s)</text>
+
+    <!-- Rate limit math box -->
+    <rect x="40" y="540" width="840" height="40" rx="6" fill="#fff3e0" stroke="#d99a4a" stroke-width="1"/>
+    <text x="60" y="565" font-size="11" fill="#7a4a10">Rate-limit math: 20 tickers x (60/30s TTL) = 40 calls/min &#8804; 60 (Finnhub free limit) - 20/min headroom, not the ceiling</text>
+
+    <!-- Finnhub API -->
+    <rect x="40" y="590" width="840" height="70" rx="8" fill="#f5eefc" stroke="#8a5cc9" stroke-width="1.5"/>
+    <text x="60" y="618" font-size="13" font-weight="700" fill="#4a2a7a">Finnhub REST API (external, free tier)</text>
+    <text x="60" y="638" font-size="11.5" fill="#5a3a8a">Per-symbol quote endpoint - no multi-ticker batch call available on free tier</text>
+
+    <!-- Arrow BFF -> finnhub -->
+    <line x1="460" x2="460" y1="530" y2="540" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <line x1="460" x2="460" y1="580" y2="590" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="470" y="575" font-size="10.5" fill="#666">REST, per-symbol</text>
+
+    <!-- Deploy -->
+    <rect x="40" y="680" width="400" height="55" rx="8" fill="#f7f7f7" stroke="#999" stroke-width="1"/>
+    <text x="60" y="702" font-size="12" font-weight="700" fill="#333">Deploy: Vercel (free tier)</text>
+    <text x="60" y="720" font-size="11" fill="#666">Frontend + BFF, connected to GitHub for CI/CD</text>
+
+    <rect x="480" y="680" width="400" height="55" rx="8" fill="#f7f7f7" stroke="#999" stroke-width="1"/>
+    <text x="500" y="702" font-size="12" font-weight="700" fill="#333">Repo: github.com/meenakshi-ojha/tradeview-lite</text>
+    <text x="500" y="720" font-size="11" fill="#666">Public, commit history visible</text>
+  </svg>
+
+  <div class="notes">
+    <h2>Round 5 - real provider confirmed as FMP, better than assumed</h2>
+    <ul>
+      <li><b>Provider is Financial Modeling Prep (FMP)</b>, not Finnhub - free tier: 250 calls/day, 512MB bandwidth/30 days (a daily quota, not per-minute). Mock-by-default matters even more here: this budget is small enough that dev/demo iteration alone could burn it if REAL mode were ever the default.</li>
+      <li><b>FMP has a genuine batch-quote endpoint</b> (<code>batch-quote?symbols=AAPL,MSFT,NVDA</code>) - one call covers the entire watchlist, not one call per ticker. This is strictly better than the per-symbol-only assumption the Round 2 rate-limit math (DataLoader/TTL cache) was built around. Mock mode stays per-symbol internally since it's free/local and batching doesn't matter there; REAL mode calls the batch endpoint directly.</li>
+      <li><b>Two-mode toggle added:</b> <code>quotes(symbols, mode: MOCK|REAL)</code> and <code>history(symbol, mode: MOCK|REAL)</code> in the GraphQL schema itself, default MOCK. Zustand store holds the current mode; a UI toggle switches it. Explicit, inspectable, no hidden env-var-only switch.</li>
+      <li><b>REAL mode error handling:</b> a 429 from FMP returns stale + a "rate limited" flag rather than throwing (matches the Core #6 error-state design); an unconfigured key or fetch failure degrades to a clean per-symbol error rather than crashing the query.</li>
+    </ul>
+    <h2>State management (final)</h2>
+    <ul>
+      <li><b>Local:</b> React <code>useState</code>/<code>useReducer</code> - native, no library.</li>
+      <li><b>Global + persistence, unified:</b> Zustand with the <code>persist</code> middleware. Watchlist symbol array and selected ticker sync to localStorage automatically - one mechanism, not a hand-rolled sync layer. This is the clean answer to "how does state survive a refresh."</li>
+      <li><b>Server/async:</b> Apollo Client's own <code>useQuery</code> + <code>pollInterval</code> - no separate TanStack Query layer (would be redundant with Apollo). TanStack Table/Virtual stays distinct - that's the grid, not the data layer, no conflict.</li>
+      <li><b>Form:</b> React Hook Form + Zod. Sync format validation (uppercase ticker regex) + duplicate-add guard, framed explicitly as rate-budget protection, not just polish - an invalid symbol added without a guard gets refetched every 30s poll for nothing. Async "does this symbol exist" check against Finnhub's symbol-search endpoint is a stretch item (it costs its own API call).</li>
+    </ul>
+    <h2>Round 4 - feature list refined after third cross-check</h2>
+    <ul>
+      <li><b>Error/empty/loading/rate-limited states promoted to Core:</b> for a financial dashboard this is the top interviewer probe, and it's nearly free since Apollo already surfaces <code>loading</code>/<code>error</code> per query. Covers: empty watchlist, a failed poll, a Finnhub 429 (show stale data + a "rate limited" badge rather than a hard error), and an invalid symbol.</li>
+      <li><b>Accessibility freebie:</b> flash-on-change animation respects <code>prefers-reduced-motion</code> - cheap, and most of the a11y story comes free via Radix (shadcn/ui's foundation) anyway.</li>
+    </ul>
+    <h2>Round 3 - resolved after second cross-check</h2>
+    <ul>
+      <li><b>Off the boundary:</b> the original 20 tickers/20s TTL point sat at exactly 60/60 calls per minute - zero headroom for the historical-data burst on first load, a second tab, or a stray manual refetch. Moved to <b>20 tickers/30s TTL = 40 calls/min</b>, leaving genuine headroom.</li>
+      <li><b>Data Cache only works inside Next's request lifecycle:</b> <code>fetch(url, {{ next: {{ revalidate }} }})</code> is silently ignored if Apollo Server runs as a standalone handler outside Next.js. Fixed by mounting Apollo via <code>@as-integrations/next</code> as an App Router Route Handler - same Next.js app, same Vercel deployment, resolvers execute in-request so the cache option actually applies.</li>
+      <li><b>Verification, not just theory:</b> log Finnhub call counts once built and confirm they stay &#8804;2/min per symbol under normal polling. One counter closes the loop on whether the caching claim is real.</li>
+      <li><b>Terminology fixed:</b> "Next.js Data Cache, persisted across invocations" - not "edge-backed" or CDN caching, which is a different mechanism.</li>
+    </ul>
+    <h2>Round 2 - resolved after first cross-check</h2>
+    <ul>
+      <li><b>Rate-limit math made explicit:</b> Finnhub free tier is a per-symbol REST call, no multi-ticker batch endpoint exists. Real constraint is T tickers x (60 / R-second TTL) &#8804; 60 calls/min. DataLoader alone wouldn't fix this (it dedupes within one request, not across time); the TTL cache is what actually bounds the rate.</li>
+      <li><b>Separate TTLs:</b> live quotes cached ~30s, historical/chart data cached on the order of hours - intraday history barely changes, no reason to refetch it every poll.</li>
+      <li><b>SSR framing corrected:</b> "SSR shell + CSR live data," not "SSR gap closed" outright. Server Components render the static shell/layout; Apollo Client + polling handles live quote fetching client-side. Accurate framing avoids an obvious interviewer catch.</li>
+      <li><b>API key:</b> Finnhub key is a server-only env var, used only inside the BFF resolver, never exposed as <code>NEXT_PUBLIC_*</code>.</li>
+    </ul>
+    <h2>Deliberate design decisions</h2>
+    <ul>
+      <li><b>BFF pattern, self-hosted:</b> builds its own thin GraphQL server wrapping a REST source, rather than consuming a public GraphQL API - demonstrates building and consuming GraphQL, not just consuming.</li>
+      <li><b>Polling instead of WebSocket/SSE:</b> chosen for free-tier rate-limit friendliness and simplicity, not because it's the objectively best choice - "why not sockets" has a ready answer (cost/complexity vs. actual real-time need for a personal project).</li>
+      <li><b>Apollo Client kept despite bundle weight:</b> a lighter fetch+SWR approach would be leaner for a single-user app with no real normalized-cache need, but the whole point of this project is demonstrating Apollo/GraphQL client experience - that trade-off is intentional.</li>
+      <li><b>shadcn/ui over Material UI/Mantine:</b> already has production MUI/Mantine experience from her day job. shadcn/ui (Radix + Tailwind, code lives in-repo) demonstrates range rather than repeating existing experience - even though MUI/Bootstrap/Tailwind are the component libraries most frequently named in the actual job postings this project supports.</li>
+      <li><b>Next.js App Router:</b> chosen specifically to close a resume gap (SSR/rendering strategy experience) - see the corrected "SSR shell + CSR live data" framing above.</li>
+      <li><b>Finnhub over Alpha Vantage:</b> more generous free tier, and has a WebSocket option available as a stated future upgrade path if the polling trade-off needs revisiting later.</li>
+    </ul>
+    <h2>Feature list (final)</h2>
+    <ul>
+      <li><b>Core 1 - Watchlist table:</b> virtualized, sortable list of tracked tickers (symbol, price, change $/%), live-updating via polling. TanStack Table + Virtual.</li>
+      <li><b>Core 2 - Add/remove ticker:</b> RHF + Zod form - format validation (uppercase ticker regex) + duplicate-add guard, framed as rate-budget protection.</li>
+      <li><b>Core 3 - Ticker detail + price chart:</b> click a row (Zustand holds the selection) → visx price history chart for that symbol.</li>
+      <li><b>Core 4 - Live polling with visible freshness:</b> 30s <code>pollInterval</code>, "last updated" indicator, flash-on-change respecting <code>prefers-reduced-motion</code>.</li>
+      <li><b>Core 5 - Persisted watchlist:</b> Zustand <code>persist</code> middleware → localStorage, no database.</li>
+      <li><b>Core 6 - Error/empty/loading/rate-limited states:</b> empty watchlist, failed poll, Finnhub 429 (stale data + "rate limited" badge, not a hard error), invalid symbol. Top interviewer probe for a financial dashboard, nearly free via Apollo's <code>loading</code>/<code>error</code> per query.</li>
+      <li><b>Stretch 7 - Table sorting/filtering:</b> by price change %, alphabetical, etc. - shows TanStack Table doing more than rendering rows.</li>
+      <li><b>Stretch 8 - Dark/light theme toggle:</b> cheap polish, ties into the design-token story.</li>
+      <li><b>Stretch 9 - Real tests:</b> Zod schema validation test on the add-ticker form, a render test on a Watchlist row.</li>
+    </ul>
+    <h2>Known scope limits (by design, given the timeline)</h2>
+    <ul>
+      <li>No auth/user accounts — single-user demo.</li>
+      <li>No database — Zustand + localStorage persistence only.</li>
+      <li>Testing: a couple of real tests (stretch), not full coverage.</li>
+    </ul>
+  </div>
+</body>
+</html>
