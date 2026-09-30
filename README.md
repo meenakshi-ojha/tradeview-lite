@@ -20,7 +20,7 @@ Full design reasoning, including three rounds of independent cross-review and th
 
 The app has a **Mock mode** (default, always safe) and a **Real mode** (Financial Modeling Prep, free tier: 250 calls/day). Mock is the default everywhere specifically so local development and demos never burn the real quota by accident. Toggle in the UI header.
 
-FMP has a genuine batch-quote endpoint, so Real mode issues one API call for the entire watchlist per poll, not one call per ticker.
+FMP's free tier has no batch-quote endpoint (verified directly against the live API — it's paid-plan-only), so Real mode is one API call per symbol, and client-side polling is disabled entirely in Real mode to protect the 250/day quota: it fetches once per toggle or watchlist change instead of continuously polling like Mock mode does.
 
 ## AI-assisted development
 
@@ -39,6 +39,18 @@ Mock mode works immediately, no API key needed. To try Real mode, add a Financia
 MARKET_DATA_API_KEY=your_key_here
 ```
 
+## Testing & CI
+
+```bash
+bun run test       # unit tests (bun test) - validation, store, mock + real data sources
+bun run test:e2e   # e2e (Playwright) - dashboard/watchlist/Markets/Settings flows,
+                    # plus an axe-core accessibility audit on every route
+bun run lint
+bun run audit       # bun audit - dependency vulnerabilities
+```
+
+The e2e suite runs exclusively against Mock mode — Real mode needs a live FMP key (never committed, absent in CI) and would otherwise burn the daily quota on every run. GitHub Actions (`.github/workflows/ci.yml`) runs all of the above — lint, unit tests, build, e2e + accessibility audit, security audit — on every push and PR to `main`.
+
 ## What's deliberately out of scope
 
-No auth, no database (Zustand + localStorage only), and testing is a couple of targeted tests rather than full coverage. These are conscious scope cuts, not oversights, the point of this project is depth on GraphQL/Next.js/state-management trade-offs, not breadth.
+No auth, no database (Zustand + localStorage only), no i18n, and no SSR/RSC data-fetching pattern (GraphQL is fetched client-side via Apollo, even though the app runs on Next.js). These are conscious scope cuts, not oversights — the point of this project is depth on GraphQL/Next.js/state-management trade-offs and a real test/CI pipeline, not breadth.

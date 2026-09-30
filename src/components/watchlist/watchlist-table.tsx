@@ -225,17 +225,34 @@ export function WatchlistTable() {
         )}
         <div className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-2 border-b bg-muted/50 px-3 py-2 text-xs font-medium text-muted-foreground">
           {table.getHeaderGroups().map((group) =>
-            group.headers.map((header) => (
-              <button
-                key={header.id}
-                className="text-left hover:text-foreground"
-                onClick={header.column.getToggleSortingHandler?.()}
-                disabled={header.isPlaceholder || !header.column.getCanSort?.()}
-              >
-                {header.isPlaceholder ? null : <table.FlexRender header={header} />}
-                {{ asc: " ↑", desc: " ↓" }[header.column.getIsSorted?.() as string] ?? ""}
-              </button>
-            ))
+            group.headers.map((header) => {
+              const label = header.isPlaceholder ? null : <table.FlexRender header={header} />;
+              const sortIndicator = { asc: " ↑", desc: " ↓" }[header.column.getIsSorted?.() as string] ?? "";
+
+              // A non-sortable column ("Status", "") has nothing to click -
+              // rendering it as a disabled <button> anyway gave axe a real,
+              // correctly-flagged violation: the "remove" column's header is
+              // a literal empty string, so that button had no accessible
+              // name at all. Plain text for non-sortable columns instead.
+              if (!header.column.getCanSort?.()) {
+                return (
+                  <span key={header.id} className="text-left">
+                    {label}
+                  </span>
+                );
+              }
+
+              return (
+                <button
+                  key={header.id}
+                  className="text-left hover:text-foreground"
+                  onClick={header.column.getToggleSortingHandler?.()}
+                >
+                  {label}
+                  {sortIndicator}
+                </button>
+              );
+            })
           )}
         </div>
         {/* Height fits the actual rows (up to a 480px cap where it scrolls

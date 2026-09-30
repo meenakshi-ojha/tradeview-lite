@@ -96,7 +96,9 @@ async function fetchOneQuote(symbol: string, apiKey: string): Promise<RawQuote> 
     // widened once cache: "force-cache" actually started working.
     const res = await timedFetch(
       `${FMP_BASE}/quote?symbol=${symbol}`,
-      { headers: { apikey: apiKey }, cache: "force-cache", next: { revalidate: 120 } },
+      // No timeout meant a hung FMP request hung the whole GraphQL
+      // resolver indefinitely - 8s is generous for a single-symbol call.
+      { headers: { apikey: apiKey }, cache: "force-cache", next: { revalidate: 120 }, signal: AbortSignal.timeout(8000) },
       "quote",
       symbol
     );
@@ -146,7 +148,7 @@ export async function getHistoryFromRealSource(symbol: string, days = 30): Promi
     const from = new Date(to.getTime() - days * 24 * 60 * 60 * 1000);
     const res = await timedFetch(
       `${FMP_BASE}/historical-price-eod/light?symbol=${symbol}&from=${isoDate(from)}&to=${isoDate(to)}`,
-      { headers: { apikey: apiKey }, cache: "force-cache", next: { revalidate: 3600 } },
+      { headers: { apikey: apiKey }, cache: "force-cache", next: { revalidate: 3600 }, signal: AbortSignal.timeout(8000) },
       "history",
       symbol
     );
