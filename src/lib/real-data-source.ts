@@ -94,7 +94,11 @@ export async function getQuotesFromRealSource(symbols: string[]): Promise<RawQuo
   return Promise.all(symbols.map((symbol) => fetchOneQuote(symbol, apiKey)));
 }
 
-export async function getHistoryFromRealSource(symbol: string): Promise<RawPricePoint[]> {
+function isoDate(d: Date) {
+  return d.toISOString().slice(0, 10);
+}
+
+export async function getHistoryFromRealSource(symbol: string, days = 30): Promise<RawPricePoint[]> {
   const apiKey = process.env.MARKET_DATA_API_KEY;
   if (!apiKey) return [];
 
@@ -102,15 +106,21 @@ export async function getHistoryFromRealSource(symbol: string): Promise<RawPrice
     // Long TTL (1hr) — intraday history barely changes, no reason to
     // refetch it every poll. FMP has no batch history endpoint, but this
     // only ever runs for the single selected ticker, on click, not per-poll.
-    const res = await fetch(`${FMP_BASE}/historical-price-eod/light?symbol=${symbol}`, {
-      headers: { apikey: apiKey },
-      next: { revalidate: 3600 },
-    });
+    //
+    // from/to bound the request to the selected range - verified directly
+    // against the live API: with no date bounds FMP returns ~5 years of
+    // history (1254 points for AAPL), so the range selector needs this to
+    // actually change what's fetched, not just what's sliced client-side.
+    const to = new Date();
+    const from = new Date(to.getTime() - days * 24 * 60 * 60 * 1000);
+    const res = await fetch(
+      `${FMP_BASE}/historical-price-eod/light?symbol=${symbol}&from=${isoDate(from)}&to=${isoDate(to)}`,
+      { headers: { apikey: apiKey }, next: { revalidate: 3600 } }
+    );
     if (!res.ok) return [];
 
     const data: Array<{ date: string; price: number }> = await res.json();
     return data
-      .slice(0, 30)
       .reverse()
       .map((d) => ({ timestamp: d.date, price: d.price }));
   } catch {

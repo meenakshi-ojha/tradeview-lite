@@ -85,7 +85,7 @@ export async function getQuoteFromSource(symbol: string): Promise<RawQuote> {
  * Mock stand-in for a Finnhub candle/history call, cached with a much longer
  * TTL than quotes (hours, not seconds) once real data is wired in.
  */
-export async function getHistoryFromSource(symbol: string): Promise<RawPricePoint[]> {
+export async function getHistoryFromSource(symbol: string, days = 30): Promise<RawPricePoint[]> {
   const base = MOCK_BASE_PRICES[symbol];
   if (!base) return [];
 
@@ -93,7 +93,7 @@ export async function getHistoryFromSource(symbol: string): Promise<RawPricePoin
   const now = Date.now();
   let price = base * (0.94 + Math.random() * 0.05);
 
-  for (let i = 30; i >= 0; i--) {
+  for (let i = days; i >= 0; i--) {
     price += (Math.random() - 0.48) * base * 0.01;
     points.push({
       timestamp: new Date(now - i * 24 * 60 * 60 * 1000).toISOString(),

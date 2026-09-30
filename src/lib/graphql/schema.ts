@@ -4,6 +4,13 @@ export const typeDefs = `#graphql
     REAL
   }
 
+  enum HistoryRange {
+    WEEK
+    MONTH
+    QUARTER
+    YEAR
+  }
+
   type Quote {
     symbol: String!
     price: Float!
@@ -29,7 +36,7 @@ export const typeDefs = `#graphql
 
   type Query {
     quotes(symbols: [String!]!, mode: DataMode = MOCK): [Quote!]!
-    history(symbol: String!, mode: DataMode = MOCK): [PricePoint!]!
+    history(symbol: String!, mode: DataMode = MOCK, range: HistoryRange = MONTH): [PricePoint!]!
     news: [NewsItem!]!
   }
 `;

@@ -15,8 +15,8 @@ export const GET_QUOTES = gql`
 `;
 
 export const GET_HISTORY = gql`
-  query GetHistory($symbol: String!, $mode: DataMode!) {
-    history(symbol: $symbol, mode: $mode) {
+  query GetHistory($symbol: String!, $mode: DataMode!, $range: HistoryRange!) {
+    history(symbol: $symbol, mode: $mode, range: $range) {
       timestamp
       price
     }

@@ -16,6 +16,14 @@ import { getQuotesFromRealSource, getHistoryFromRealSource } from "@/lib/real-da
 // during dev/demo iteration.
 
 type Mode = "MOCK" | "REAL";
+type HistoryRange = "WEEK" | "MONTH" | "QUARTER" | "YEAR";
+
+const RANGE_DAYS: Record<HistoryRange, number> = {
+  WEEK: 7,
+  MONTH: 30,
+  QUARTER: 90,
+  YEAR: 365,
+};
 
 export const resolvers = {
   Query: {
@@ -25,9 +33,13 @@ export const resolvers = {
       }
       return Promise.all(symbols.map((s) => getQuoteFromSource(s)));
     },
-    history: async (_: unknown, { symbol, mode }: { symbol: string; mode: Mode }) => {
+    history: async (
+      _: unknown,
+      { symbol, mode, range }: { symbol: string; mode: Mode; range: HistoryRange }
+    ) => {
+      const days = RANGE_DAYS[range];
       const fetcher = mode === "REAL" ? getHistoryFromRealSource : getHistoryFromSource;
-      return fetcher(symbol);
+      return fetcher(symbol, days);
     },
     news: async () => getMockNews(),
   },
